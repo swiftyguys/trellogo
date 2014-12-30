@@ -167,7 +167,7 @@ var TrelloGo = can.Control.extend( {
                             $( this ).dialog( 'close' );
                             $( "#trellogo_settings_dialog" ).remove();
 
-                            this.updateCardsStatusThrottledObject();
+                            self.updateCardsStatusThrottledObject();
                         }
                     }
                 } );
@@ -265,6 +265,33 @@ var TrelloGo = can.Control.extend( {
 
         if( typeof card !== 'undefined' ) {
             this.sendEvt( { 'act': 'openCard', 'url': card.url } );
+        }
+    },
+
+    ////////////////////////////////////////
+
+    '{window} mousemove': function( el, ev ) {
+        this.mouseX = ev.pageX;
+        this.mouseY = ev.pageY;
+    },
+
+    ////////////////////////////////////////
+
+    '{window} keyup': function( el, ev ) {
+        var self = this;
+
+        if( ev.keyCode === 77 && ev.ctrlKey ) { // ctrl-m
+            var elUnderMouse = document.elementFromPoint( this.mouseX, this.mouseY );
+            var $elUnderMouse = $( elUnderMouse );
+
+            if( ! $elUnderMouse.hasClass( 'list-card' ) ) {
+                $elUnderMouse = $elUnderMouse.closest( '.list-card' );
+            }
+
+            if( $elUnderMouse.length === 1 ) {
+                $elUnderMouse.find( '.js-open-quick-card-editor' ).click();
+                self.sendEvt( { 'act': 'openMoveMenu' } );
+            }
         }
     },
 

@@ -32,7 +32,25 @@ var trelloGo = {
             if( ev.detail.act === 'openCard' ) {
                 self.openCard( ev.detail.url );
             }
+
+            if( ev.detail.act === 'openMoveMenu' ) {
+                self.openMoveMenu();
+            }
         } );
+    },
+
+    ////////////////////////////////////////
+
+    openMoveMenu: function() {
+        setTimeout( function() {
+            $( '.js-move-card' ).click();
+            setTimeout( function() {
+                var element = $( '.js-select-list' )[ 0 ];
+                var e = document.createEvent( 'MouseEvents' );
+                e.initMouseEvent( 'mousedown', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null );
+                element.dispatchEvent(e);
+            }, 1 );
+        }, 1 );
     },
 
     ////////////////////////////////////////

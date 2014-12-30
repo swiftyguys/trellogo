@@ -8,7 +8,10 @@
     </ul>
     <div>
         <div id="trellogo_settings_general">
-            <div style="float: left;">
+            <div style="clear: both; float: left;">
+                Options:<br><br>
+            </div>
+            <div style="clear: both; float: left;">
                 {{#if settings_show_nrs}}
                     <input type="checkbox" class="trellogo_set_show_nrs" checked>
                 {{else}}
@@ -37,6 +40,12 @@
                 &nbsp;
             </div>
             <div style="float: left;">Show tags at the bottom of the card (create tags: add {mytag} to a card title) &nbsp; [refresh the page if you uncheck this option]</div>
+
+            <div style="clear: both; float: left;">
+                <br><br>
+                Extra keyboard shortcuts:<br><br>
+                ctrl-M = Move card to list... (when mouse is over a card)<br>
+            </div>
         </div>
         <div id="trellogo_settings_filter">
 
