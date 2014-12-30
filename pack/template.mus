@@ -1,0 +1,108 @@
+<style>
+    #trellogo_content {
+        height: 100%;
+        background-color: #C2C2C2;
+        border-radius: 3px;
+        padding: 8px;
+        overflow-y: scroll;
+    }
+
+    .trellogo_column_wrapper {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .trellogo_column {
+        float: left;
+        margin-right: 8px;
+        background-color: #e3e3e3;
+        border-radius: 3px;
+        padding: 8px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .trellogo_column:last-child {
+        margin-right: 0;
+    }
+
+    .trellogo_column_inner {
+        flex: 1;
+    }
+
+    .trellogo_card, .trellogo_sortable_placeholder {
+        background-color: white;
+        border-radius: 3px;
+        /*margin-right: 5px;*/
+        margin-bottom: 5px;
+        padding: 8px;
+        cursor: pointer;
+    }
+
+    .trellogo_card:hover {
+        background-color: #F0F0F0;
+    }
+
+    .trellogo_sortable_placeholder {
+        background-color: transparent !important;
+        border: 2px dashed white;
+        width: 100%;
+    }
+
+    .ui-dialog-titlebar-close {
+        visibility: hidden;
+    }
+
+    #trellogo_settings_dialog input[type="checkbox"] {
+        min-height: 20px !important;
+        margin: 0;
+    }
+</style>
+
+<div id="trellogo_main" style="display: none; padding: 5px; margin-bottom: 15px;">
+    <div id="trellogo_content">
+
+        {{#if appkey}}
+
+            {{#if logged_in}}
+
+                <div style="float: right;">
+                    <a id="trellogo_settings_toggle" href="#">Settings</a>
+                    - Connected as {{my_full_name}} <a id="trellogo_disconnect" href="#">Disconnect</a>
+                </div>
+
+                <div style="float: left; padding-bottom: 8px;">
+                    My cards: [{{card_count_filtered}} of {{card_count}}]
+                    <a id="trellogo_refresh_toggle" href="#">Refresh</a>
+                </div>
+                <div style="clear: both;"></div>
+
+                <div class="trellogo_column_wrapper">
+                    {{#each columns}}
+                        <div class="trellogo_column">
+                            <div style="margin-bottom: 8px; font-size: 14px; font-weight: bold;">{{name}}</div>
+                            <div class="trellogo_column_inner" data-trellogo-column-nr="{{nr}}"></div>
+                        </div>
+                    {{/each}}
+                </div>
+
+            {{else}}
+                {{#if script_loaded}}
+                    And now click <a id="trellogo_connect" href="#">this link</a> to allow this TrelloGo chrome extension access to you Trello cards.
+                {{else}}
+                    One moment...
+                {{/if}}
+            {{/if}}
+
+        {{else}}
+
+            Please visit <a href="https://trello.com/app-key" target="_blank">this link<a/> to get you app key and then fill it out below:<br>
+            <br><br>
+            <input type="text" name="appkey" class="trellogo_appkey_input" style="width: 300px;">
+            <a id="trellogo_appkey_submit" href="#">Submit</a>
+
+        {{/if}}
+
+    </div>
+</div>

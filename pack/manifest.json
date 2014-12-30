@@ -1,0 +1,42 @@
+{
+    "manifest_version": 2,
+    "name": "TrelloGo",
+    "description": "TrelloGo",
+    "version": "0.1.0",
+    "background": {
+        "page": "main.html"
+    },
+    "icons": {
+        "128": "img/128.png",
+        "16": "img/16.png"
+    },
+    "web_accessible_resources": [
+        "script.js",
+        "template.mus",
+        "template_toggle.mus",
+        "template_settings.mus",
+        "template_card.mus"
+    ] ,
+    "permissions": [
+        "storage",
+        "clipboardRead",
+        "clipboardWrite",
+        "https://*.trello.com/*"
+    ],
+    "content_scripts": [ {
+        "matches": [
+            "https://*.trello.com/*"
+        ],
+        "js": [
+            "jquery.min.js",
+            "jquery-ui.min.js",
+            "can.custom.js",
+            "cont_scr.js"
+        ],
+        "css": [
+            "jquery-ui.min.css",
+            "jquery-ui.structure.min.css",
+            "jquery-ui.theme.min.css"
+        ]
+    } ]
+}

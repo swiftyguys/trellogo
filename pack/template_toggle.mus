@@ -1,0 +1,48 @@
+<style>
+    .trellogo_card_sid {
+        font-weight: normal;
+        font-size: 11px;
+        color: #bbb;
+        cursor: vertical-text;
+    }
+
+    .list-header-num-cards {
+        display: none !important;
+    }
+
+    .trellogo_list_count {
+        display: inline-flex;
+        float: right;
+    }
+
+    .trellogo_tag {
+        font-size: 11px;
+        line-height: 18px;
+        background-color: #6D6D6D;
+        color: white;
+        padding: 0px 4px;
+    }
+
+    .trellogo_label_list .card-label {
+        width: inherit !important;
+        height: 18px !important;
+        font-size: 11px !important;
+        line-height: 18px !important;
+        padding: 0px 4px !important;
+        text-shadow: none !important;
+    }
+
+    .trellogo_label_list {
+        margin: 0px !important;
+        float: left;
+    }
+</style>
+
+&nbsp;
+<a class="header-btn" href="#" title="TrelloGo" id="trellogo_main_toggle">
+    <span class="header-btn-icon icon-lg icon-menu light"></span>
+</a>
+
+<a class="header-btn" href="#" title="Copy an 8 digit card id to the clipboard and click here to open that card. Click on any (grey) id below to copy to clipboard" id="trellogo_id_search">
+    <span class="header-search-icon icon-lg light">#?</span>
+</a>
