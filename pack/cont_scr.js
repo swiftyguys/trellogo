@@ -160,6 +160,7 @@ var TrelloGo = can.Control.extend( {
                 this.tabs();
                 this.dialog( {
                     modal: true,
+                    //closeOnEscape: true, // does not work in Trello
                     width: $( window ).width() * 0.8,
                     height: $( window ).height() * 0.8,
                     buttons: {
@@ -280,7 +281,11 @@ var TrelloGo = can.Control.extend( {
     '{window} keyup': function( el, ev ) {
         var self = this;
 
-        if( ev.keyCode === 77 && ev.ctrlKey ) { // ctrl-m
+        if( ev.ctrlKey && (
+            ev.keyCode === 77 // ctrl-M
+            || ev.keyCode === 48 // ctrl-0
+            || ev.keyCode === 49 // ctrl-1
+        ) ) {
             var elUnderMouse = document.elementFromPoint( this.mouseX, this.mouseY );
             var $elUnderMouse = $( elUnderMouse );
 
@@ -290,7 +295,7 @@ var TrelloGo = can.Control.extend( {
 
             if( $elUnderMouse.length === 1 ) {
                 $elUnderMouse.find( '.js-open-quick-card-editor' ).click();
-                self.sendEvt( { 'act': 'openMoveMenu' } );
+                self.sendEvt( { 'act': 'simulateCardMove', 'code': ev.keyCode } );
             }
         }
     },

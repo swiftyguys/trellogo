@@ -44,7 +44,9 @@
             <div style="clear: both; float: left;">
                 <br><br>
                 Extra keyboard shortcuts:<br><br>
-                ctrl-M = Move card to list... (when mouse is over a card)<br>
+                ctrl-M = Open move-to-list menu for card under mouse<br>
+                ctrl-1 = Move card under mouse to the top of it's list<br>
+                ctrl-0 = Move card under mouse to the bottom of it's list<br>
             </div>
         </div>
         <div id="trellogo_settings_filter">

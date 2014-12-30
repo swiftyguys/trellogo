@@ -33,24 +33,51 @@ var trelloGo = {
                 self.openCard( ev.detail.url );
             }
 
-            if( ev.detail.act === 'openMoveMenu' ) {
-                self.openMoveMenu();
+            if( ev.detail.act === 'simulateCardMove' ) {
+                self.simulateCardMove( ev.detail.code );
             }
         } );
     },
 
     ////////////////////////////////////////
 
-    openMoveMenu: function() {
+    simulateCardMove: function( code ) {
+        var self = this;
+
         setTimeout( function() {
             $( '.js-move-card' ).click();
             setTimeout( function() {
-                var element = $( '.js-select-list' )[ 0 ];
-                var e = document.createEvent( 'MouseEvents' );
-                e.initMouseEvent( 'mousedown', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null );
-                element.dispatchEvent(e);
+                var $select = $( '.js-select-list' );
+                if( code !== 77 ) { // M
+                    $select = $( '.js-select-position' );
+                }
+                var element = $select[ 0 ];
+                self.dispatchMouseDown( element );
+                if( code !== 77 ) { // M
+                    setTimeout( function() {
+                        var s = 'option';
+                        if( code === 48 ) { // 0
+                            s = 'option:last';
+                        }
+                        var element2 = $select.find( s )[ 0 ];
+                        $select.val( $( element2 ).val() );
+
+                        self.dispatchMouseDown( element2 );
+                        self.dispatchMouseDown( element );
+
+                        $select.closest( '.pop-over' ).find( '.js-submit' ).click();
+                    }, 1 );
+                }
             }, 1 );
         }, 1 );
+    },
+
+    ////////////////////////////////////////
+
+    dispatchMouseDown: function( element ) {
+        var e = document.createEvent( 'MouseEvents' );
+        e.initMouseEvent( 'mousedown', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null );
+        element.dispatchEvent(e);
     },
 
     ////////////////////////////////////////
