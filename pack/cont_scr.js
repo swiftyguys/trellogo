@@ -9,8 +9,8 @@ var TrelloGo = can.Control.extend( {
           settings_move_labels: true,
           settings_show_tags: true,
           my_full_name: '',
-          card_count: 'Loading...',
-          card_count_filtered: 'Loading...',
+          card_count: '...',
+          card_count_filtered: '...',
           cards: [],
           boards: [],
           lists: [],
@@ -280,57 +280,14 @@ var TrelloGo = can.Control.extend( {
 
             if( sdat.attr( 'cards' ) ) {
                 sdat.attr( 'cards' ).forEach( function( card ) {
-                    var board = self.getById( 'boards', card.idBoard );
-                    var list = self.getById( 'lists', card.idList );
+                    self.cardCheckSetColumn( card );
 
-                    if( ! ( parseInt( card.attr( 'tg_column' ) , 10 ) >= 0 ) ) {
-                        var key = 'trellogo_card_' + card.id + '_column';
-                        self.storeageGet( key, function( result ) {
-                            var key = Object.keys( result )[0];
-                            if( result[ key ] ) {
-                                card.attr( 'tg_column', result[ key ] );
-                            } else {
-                                card.attr( 'tg_column', 0 );
-                            }
-                        } );
-
+                    if( self.cardCheckSetOrder( card ) ) {
+                        orderChanged = true;
                     }
 
-                    if( ! ( parseInt( card.attr( 'tg_order' ) , 10 ) >= 0 ) ) {
-                        var key = 'trellogo_card_' + card.id + '_order';
-                        self.storeageGet( key, function( result ) {
-                            var key = Object.keys( result )[ 0 ];
-                            var n = 0;
-                            if( result[ key ] ) {
-                                n = result[ key ];
-                            }
-
-                            if( card.attr( 'tg_order' ) != n ) {
-                                card.attr( 'tg_order', n );
-                                orderChanged = true;
-                            }
-                        } );
-                    } else {
-                        if( card.attr( 'tg_order_temp' ) >= 0 && card.attr( 'tg_order' ) != card.attr( 'tg_order_temp' ) ) {
-                            card.attr( 'tg_order', card.attr( 'tg_order_temp' ) );
-                            orderChanged = true;
-                        }
-                    }
-
-                    if( typeof board !== 'undefined' && typeof list !== 'undefined' ) {
-
-                        if( self.boardsFound && self.listsFound ) {
-                            var sh = true;
-                            if( board.attr( 'tg_unchecked' ) === true || list.attr( 'tg_lunchecked' ) === true ) {
-                                sh = false;
-                            }
-
-                            if( card.attr( 'tg_show' ) !== sh ) {
-                                card.attr( 'tg_show', sh );
-                                orderChanged = true;
-                            }
-
-                        }
+                    if( self.cardCheckSetShow( card ) ) {
+                        orderChanged = true;
                     }
 
                     if( card.attr( 'tg_show' ) === true ) {
@@ -338,75 +295,11 @@ var TrelloGo = can.Control.extend( {
                     }
                 } );
 
-                setTimeout( function() {
-                    if( orderChanged ) {
-                        //console.log( "orderChanged" );
-
-                        if( sdat.attr( 'cards' ) ) {
-                            var cnt2 = 0;
-                            var cnt3 = 0;
-                            var cnt4 = 0;
-                            sdat.attr( 'cards' ).forEach( function( card ) {
-
-                                if( card.attr( 'tg_show' ) === true ) {
-                                    cnt2++;
-                                    if( card.attr( 'tg_added_page' ) !== 'added' ) {
-                                        cnt3++;
-                                        card.attr( 'tg_added_page', 'added' )
-                                        setTimeout( function() {
-                                            var template = can.view( can.mustache( self.templateCard ), card );
-
-                                            $( '.trellogo_column_inner:first' ).append( template );
-                                        }, 1 );
-                                    }
-                                } else {
-                                    if( card.attr( 'tg_added_page' ) === 'added' ) {
-                                        cnt4++;
-                                        $( '.trellogo_card[data-trellogo-card-id="' + card.id + '"]' ).remove();
-                                        card.attr( 'tg_added_page', 'removed' );
-                                    }
-                                }
-
-                            } );
-                            //console.log( "adding", cnt2, cnt3, cnt4 );
-
-                        }
-
-                        setTimeout( function() {
-                            $( '.trellogo_column_inner' ).each( function( ii, el ) {
-                                var $column = $( el );
-                                $column.find( '.trellogo_card' ).each( function( ii, el ) {
-                                    var $card = $( el );
-                                    var card = self.getById( 'cards', $card.attr( 'data-trellogo-card-id' ) );
-                                    var done = false;
-                                    setTimeout( function() {
-                                        $( '.trellogo_column_inner' ).each( function( ii, el ) {
-                                            if( $( el ).attr( 'data-trellogo-column-nr' ) == card.attr( 'tg_column' ) ) {
-                                                var $column2 = $( el );
-                                                $column2.find( '.trellogo_card' ).each( function( ii, el ) {
-                                                    if( !done ) {
-                                                        var $card2 = $( el );
-                                                        var card2 = self.getById( 'cards', $card2.attr( 'data-trellogo-card-id' ) );
-                                                        if( $card.is( $card2 ) ) {
-                                                            done = true;
-                                                        }
-                                                        if( !done && card2.attr( 'tg_order' ) > card.attr( 'tg_order' ) ) {
-                                                            $card.insertBefore( $card2 );
-                                                            done = true;
-                                                        }
-                                                    }
-                                                } );
-                                                if( !done ) {
-                                                    $column2.append( $card );
-                                                }
-                                            }
-                                        } );
-                                    }, 1 );
-                                } );
-                            } );
-                        }, 100 );
-                    }
-                }, 1000 );
+                if( orderChanged ) {
+                    setTimeout( function() {
+                        self.orderChanged();
+                    }, 1000 );
+                }
             }
 
             //console.log( "count", count );
@@ -417,6 +310,160 @@ var TrelloGo = can.Control.extend( {
             }
         }, 100 );
 
+    },
+
+    ////////////////////////////////////////
+
+    cardCheckSetColumn: function( card ) {
+        var self = this;
+
+        if( ! ( parseInt( card.attr( 'tg_column' ) , 10 ) >= 0 ) ) {
+            var key = 'trellogo_card_' + card.id + '_column';
+            self.storeageGet( key, function( result ) {
+                var key = Object.keys( result )[0];
+                if( result[ key ] ) {
+                    card.attr( 'tg_column', result[ key ] );
+                } else {
+                    card.attr( 'tg_column', 0 );
+                }
+            } );
+        }
+    },
+
+    ////////////////////////////////////////
+
+    cardCheckSetOrder: function( card ) {
+        var self = this;
+        var orderChanged = false;
+
+        if( ! ( parseInt( card.attr( 'tg_order' ) , 10 ) >= 0 ) ) {
+            var key = 'trellogo_card_' + card.id + '_order';
+            self.storeageGet( key, function( result ) {
+                var key = Object.keys( result )[ 0 ];
+                var n = 0;
+                if( result[ key ] ) {
+                    n = result[ key ];
+                }
+
+                if( card.attr( 'tg_order' ) != n ) {
+                    card.attr( 'tg_order', n );
+                    orderChanged = true;
+                }
+            } );
+        } else {
+            if( card.attr( 'tg_order_temp' ) >= 0 && card.attr( 'tg_order' ) != card.attr( 'tg_order_temp' ) ) {
+                card.attr( 'tg_order', card.attr( 'tg_order_temp' ) );
+                orderChanged = true;
+            }
+        }
+
+        return orderChanged;
+    },
+
+    ////////////////////////////////////////
+
+    cardCheckSetShow: function( card ) {
+        var self = this;
+        var orderChanged = false;
+        var board = self.getById( 'boards', card.idBoard );
+        var list = self.getById( 'lists', card.idList );
+
+        if( typeof board !== 'undefined' && typeof list !== 'undefined' ) {
+            if( self.boardsFound && self.listsFound ) {
+                var sh = true;
+                if( board.attr( 'tg_unchecked' ) === true || list.attr( 'tg_lunchecked' ) === true ) {
+                    sh = false;
+                }
+
+                if( card.attr( 'tg_show' ) !== sh ) {
+                    card.attr( 'tg_show', sh );
+                    orderChanged = true;
+                }
+            }
+        }
+
+        return orderChanged;
+    },
+
+    ////////////////////////////////////////
+
+    orderChanged: function() {
+        var self = this;
+        var sdat = self.options.data;
+
+        //console.log( "orderChanged" );
+
+        if( sdat.attr( 'cards' ) ) {
+            var cnt2 = 0;
+            var cnt3 = 0;
+            var cnt4 = 0;
+            sdat.attr( 'cards' ).forEach( function( card ) {
+
+                if( card.attr( 'tg_show' ) === true ) {
+                    cnt2++;
+                    if( card.attr( 'tg_added_page' ) !== 'added' ) {
+                        cnt3++;
+                        card.attr( 'tg_added_page', 'added' )
+                        setTimeout( function() {
+                            var template = can.view( can.mustache( self.templateCard ), card );
+
+                            $( '.trellogo_column_inner:first' ).append( template );
+                        }, 1 );
+                    }
+                } else {
+                    if( card.attr( 'tg_added_page' ) === 'added' ) {
+                        cnt4++;
+                        $( '.trellogo_card[data-trellogo-card-id="' + card.id + '"]' ).remove();
+                        card.attr( 'tg_added_page', 'removed' );
+                    }
+                }
+
+            } );
+            //console.log( "adding", cnt2, cnt3, cnt4 );
+
+        }
+
+        setTimeout( function() {
+            self.reorderCards();
+        }, 100 );
+    },
+
+    ////////////////////////////////////////
+
+    reorderCards: function() {
+        var self = this;
+
+        $( '.trellogo_column_inner' ).each( function( ii, el ) {
+            var $column = $( el );
+            $column.find( '.trellogo_card' ).each( function( ii, el ) {
+                var $card = $( el );
+                var card = self.getById( 'cards', $card.attr( 'data-trellogo-card-id' ) );
+                var done = false;
+                setTimeout( function() {
+                    $( '.trellogo_column_inner' ).each( function( ii, el ) {
+                        if( $( el ).attr( 'data-trellogo-column-nr' ) == card.attr( 'tg_column' ) ) {
+                            var $column2 = $( el );
+                            $column2.find( '.trellogo_card' ).each( function( ii, el ) {
+                                if( !done ) {
+                                    var $card2 = $( el );
+                                    var card2 = self.getById( 'cards', $card2.attr( 'data-trellogo-card-id' ) );
+                                    if( $card.is( $card2 ) ) {
+                                        done = true;
+                                    }
+                                    if( !done && card2.attr( 'tg_order' ) > card.attr( 'tg_order' ) ) {
+                                        $card.insertBefore( $card2 );
+                                        done = true;
+                                    }
+                                }
+                            } );
+                            if( !done ) {
+                                $column2.append( $card );
+                            }
+                        }
+                    } );
+                }, 1 );
+            } );
+        } );
     },
 
     ////////////////////////////////////////
