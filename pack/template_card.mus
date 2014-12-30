@@ -1,4 +1,3 @@
-{{#unless tg_hidden}}
 <div class="trellogo_card" data-trellogo-card-id="{{id}}">
     {{name}}<br>
     <span style="font-size: 10px; line-height: 10px;">
@@ -6,4 +5,3 @@
         // {{viaref "lists" "id" idList}}<br>
     </span>
 <div>
-{{/unless}}

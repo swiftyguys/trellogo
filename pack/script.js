@@ -186,8 +186,6 @@ var trelloGo = {
     ////////////////////////////////////////
 
     sendEvt: function( data ) {
-        //console.log( "sendEvt from script", data );
-
         var evt = document.createEvent( 'CustomEvent' );
         evt.initCustomEvent( 'TrelloGoEvent2', true, true, data );
         document.dispatchEvent( evt );

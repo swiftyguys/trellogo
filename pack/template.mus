@@ -74,7 +74,7 @@
 
                 <div style="float: left; padding-bottom: 8px;">
                     My cards: [{{card_count_filtered}} of {{card_count}}]
-                    <a id="trellogo_refresh_toggle" href="#">Refresh</a>
+                    - <a id="trellogo_refresh_toggle" href="#">Refresh</a>
                 </div>
                 <div style="clear: both;"></div>
 

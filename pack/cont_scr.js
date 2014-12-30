@@ -4,7 +4,6 @@ var TrelloGo = can.Control.extend( {
           appkey: undefined,
           logged_in: false,
           script_loaded: false,
-          //settings_open: false,
           cards_received: false,
           settings_show_nrs: true,
           settings_move_labels: true,
@@ -38,6 +37,7 @@ var TrelloGo = can.Control.extend( {
 }, {
     init: function( /*element , options*/ ) {
         var self = this;
+        var sdat = self.options.data;
 
         self.updateCardsStatusThrottledObject = throttle( $.proxy( self.updateCardsStatus, self ), 100 );
 
@@ -51,7 +51,7 @@ var TrelloGo = can.Control.extend( {
 
         document.addEventListener( 'TrelloGoEvent2', function( ev ) {
             if( ev.detail.act === 'initDone' ) {
-                self.options.data.attr( 'my_full_name', ev.detail.fullname );
+                sdat.attr( 'my_full_name', ev.detail.fullname );
             }
 
             if( ev.detail.act === 'newCards' ) {
@@ -75,11 +75,11 @@ var TrelloGo = can.Control.extend( {
             }
 
             if( ev.detail.act === 'seLoggedIn' ) {
-                self.options.data.attr( 'logged_in', ev.detail.logged_in );
+                sdat.attr( 'logged_in', ev.detail.logged_in );
             }
 
             if( ev.detail.act === 'trelloScriptLoaded' ) {
-                self.options.data.attr( 'script_loaded', true );
+                sdat.attr( 'script_loaded', true );
             }
         } );
 
@@ -95,17 +95,22 @@ var TrelloGo = can.Control.extend( {
     ////////////////////////////////////////
 
     '#trellogo_disconnect click': function() {
+        var self = this;
+        var sdat = self.options.data;
+
         chrome.storage.local.set( { 'trellogo_appkey': '' } );
-        this.options.data.attr( 'appkey', '' );
+        sdat.attr( 'appkey', '' );
         this.sendEvt( { 'act': 'logout' } );
     },
 
     ////////////////////////////////////////
 
     '#trellogo_appkey_submit click': function() {
+        var self = this;
+        var sdat = self.options.data;
         var val = $( '.trellogo_appkey_input' ).val();
 
-        this.options.data.attr( 'appkey', val );
+        sdat.attr( 'appkey', val );
         chrome.storage.local.set( { 'trellogo_appkey': val } );
         this.getAppKey();
     },
@@ -144,11 +149,10 @@ var TrelloGo = can.Control.extend( {
 
     '#trellogo_settings_toggle click': function() {
         var self = this;
-
-        //this.options.data.attr( 'settings_open', ! this.options.data.attr( 'settings_open' ) );
+        var sdat = self.options.data;
 
         $.get( chrome.extension.getURL( 'template_settings.mus' ), function( data ) {
-            var template = can.view( can.mustache( data ), self.options.data );
+            var template = can.view( can.mustache( data ), sdat );
 
             $( 'body' ).append( template );
 
@@ -186,22 +190,6 @@ var TrelloGo = can.Control.extend( {
         this.sendEvt( { 'act': 'getAll' } );
     },
 
-    //////////////////////////////////////////
-    //
-    //'#trellogo_settings_save mouseup': function() {
-    //    this.options.data.attr( 'settings_open', ! this.options.data.attr( 'settings_open' ) );
-    //
-    //    this.updateCardsStatusThrottledObject();
-    //},
-    //
-    //////////////////////////////////////////
-    //
-    //'#trellogo_settings_cancel click': function() {
-    //    this.options.data.attr( 'settings_open', ! this.options.data.attr( 'settings_open' ) );
-    //
-    //    this.updateCardsStatusThrottledObject();
-    //},
-
     ////////////////////////////////////////
 
     '.trellogo_set_board_toggle click': function( el/*, ev*/ ) {
@@ -210,31 +198,36 @@ var TrelloGo = can.Control.extend( {
         if( typeof board !== 'undefined' ) {
             board.attr( 'tg_opened', ! board.attr( 'tg_opened' ) );
         }
-        //
-        //ev.stopPropagation();
-        //ev.preventDefault();
-        //return false;
     },
 
     ////////////////////////////////////////
 
     '.trellogo_set_show_nrs click': function( el/*, ev*/ ) {
-        this.options.data.attr( 'settings_show_nrs', ! this.options.data.attr( 'settings_show_nrs' ) );
-        chrome.storage.local.set( { 'trellogo_set_show_nrs': this.options.data.attr( 'settings_show_nrs' ) } );
+        var self = this;
+        var sdat = self.options.data;
+
+        sdat.attr( 'settings_show_nrs', ! sdat.attr( 'settings_show_nrs' ) );
+        chrome.storage.local.set( { 'trellogo_set_show_nrs': sdat.attr( 'settings_show_nrs' ) } );
     },
 
     ////////////////////////////////////////
 
     '.trellogo_set_move_labels click': function( el/*, ev*/ ) {
-        this.options.data.attr( 'settings_move_labels', ! this.options.data.attr( 'settings_move_labels' ) );
-        chrome.storage.local.set( { 'trellogo_set_move_labels': this.options.data.attr( 'settings_move_labels' ) } );
+        var self = this;
+        var sdat = self.options.data;
+
+        sdat.attr( 'settings_move_labels', ! sdat.attr( 'settings_move_labels' ) );
+        chrome.storage.local.set( { 'trellogo_set_move_labels': sdat.attr( 'settings_move_labels' ) } );
     },
 
     ////////////////////////////////////////
 
     '.trellogo_set_show_tags click': function( el/*, ev*/ ) {
-        this.options.data.attr( 'settings_show_tags', ! this.options.data.attr( 'settings_show_tags' ) );
-        chrome.storage.local.set( { 'trellogo_set_show_tags': this.options.data.attr( 'settings_show_tags' ) } );
+        var self = this;
+        var sdat = self.options.data;
+
+        sdat.attr( 'settings_show_tags', ! sdat.attr( 'settings_show_tags' ) );
+        chrome.storage.local.set( { 'trellogo_set_show_tags': sdat.attr( 'settings_show_tags' ) } );
     },
 
     ////////////////////////////////////////
@@ -281,14 +274,14 @@ var TrelloGo = can.Control.extend( {
 
     updateCardsStatus: function() {
         var self = this;
+        var sdat = self.options.data;
 
         setTimeout( function() {
             var count = 0;
             var orderChanged = false;
 
-            if( self.options.data.attr( 'cards' ) ) {
-                self.options.data.attr( 'cards' ).forEach( function( card ) {
-                    //console.log( "card", card );
+            if( sdat.attr( 'cards' ) ) {
+                sdat.attr( 'cards' ).forEach( function( card ) {
                     var board = self.getById( 'boards', card.idBoard );
                     var list = self.getById( 'lists', card.idList );
 
@@ -313,32 +306,22 @@ var TrelloGo = can.Control.extend( {
                             if( result[ key ] ) {
                                 n = result[ key ];
                             }
-                            //console.log( "bbb", card.attr( 'tg_order' ), n );
 
                             if( card.attr( 'tg_order' ) != n ) {
-                                //console.log( "ccc" );
-
                                 card.attr( 'tg_order', n );
                                 orderChanged = true;
                             }
                         } );
                     } else {
                         if( card.attr( 'tg_order_temp' ) >= 0 && card.attr( 'tg_order' ) != card.attr( 'tg_order_temp' ) ) {
-                            //console.log( "ccc" );
-
                             card.attr( 'tg_order', card.attr( 'tg_order_temp' ) );
                             orderChanged = true;
                         }
                     }
 
                     if( typeof board !== 'undefined' && typeof list !== 'undefined' ) {
-                        //console.log( "aaa", typeof board.attr( 'tg_unchecked' ) );
-                        //console.log( "aaa222", typeof list.attr( 'tg_lunchecked' ) );
 
                         if( self.boardsFound && self.listsFound ) {
-                        //if( typeof board.attr( 'tg_unchecked' ) === 'boolean' && typeof list.attr( 'tg_lunchecked' ) === 'boolean' ) {
-                        //    console.log( "aaa============" );
-
                             var sh = true;
                             if( board.attr( 'tg_unchecked' ) === true || list.attr( 'tg_lunchecked' ) === true ) {
                                 sh = false;
@@ -347,72 +330,25 @@ var TrelloGo = can.Control.extend( {
                             if( card.attr( 'tg_show' ) !== sh ) {
                                 card.attr( 'tg_show', sh );
                                 orderChanged = true;
-                                //console.log( "tg_show", sh );
-
                             }
 
                         }
                     }
 
                     if( card.attr( 'tg_show' ) === true ) {
-                        //console.log( "count++" );
-
                         count++;
-
-                        ////if( $( '.trellogo_card[data-trellogo-card-id="' + card.id + '"]' ).length <= 0 ) {
-                        //if( card.attr( 'tg_added_page' ) !== 'added' ) {
-                        //    orderChanged = true;
-                        //    card.attr( 'tg_added_page', 'added' )
-                        //    setTimeout( function() {
-                        //        var template = can.view( can.mustache( self.templateCard ), card );
-                        //
-                        //        $( '.trellogo_column_inner:first' ).append( template );
-                        //    }, 1 );
-                        //}
                     }
                 } );
 
                 setTimeout( function() {
                     if( orderChanged ) {
-                        console.log( "orderChanged" );
+                        //console.log( "orderChanged" );
 
-                        //function compare( a, b ) {
-                        //  if( a.tg_order < b.tg_order )
-                        //     return -1;
-                        //  if ( a.tg_order > b.tg_order )
-                        //    return 1;
-                        //  return 0;
-                        //}
-                        //
-                        //var cards = self.options.data.attr( 'cards' ).attr();
-                        //cards.sort( compare );
-                        //self.options.data.attr( 'cards', cards )
-
-                        //if( self.options.data.attr( 'cards' ) ) {
-                        //    self.options.data.attr( 'cards' ).forEach( function( card ) {
-                        //
-                        //        if( card.attr( 'tg_show' ) === true ) {
-                        //
-                        //            //if( $( '.trellogo_card[data-trellogo-card-id="' + card.id + '"]' ).length <= 0 ) {
-                        //            if( card.attr( 'tg_added_page' ) !== 'added' ) {
-                        //                card.attr( 'tg_added_page', 'added' )
-                        //                setTimeout( function() {
-                        //                    var template = can.view( can.mustache( self.templateCard ), card );
-                        //
-                        //                    $( '.trellogo_column_inner:first' ).append( template );
-                        //                }, 1 );
-                        //            }
-                        //
-                        //        }
-                        //
-                        //    } );
-                        //}
-
-                        if( self.options.data.attr( 'cards' ) ) {
+                        if( sdat.attr( 'cards' ) ) {
                             var cnt2 = 0;
                             var cnt3 = 0;
                             var cnt4 = 0;
-                            self.options.data.attr( 'cards' ).forEach( function( card ) {
+                            sdat.attr( 'cards' ).forEach( function( card ) {
 
                                 if( card.attr( 'tg_show' ) === true ) {
                                     cnt2++;
@@ -427,14 +363,14 @@ var TrelloGo = can.Control.extend( {
                                     }
                                 } else {
                                     if( card.attr( 'tg_added_page' ) === 'added' ) {
-                                        cnt3++;
+                                        cnt4++;
                                         $( '.trellogo_card[data-trellogo-card-id="' + card.id + '"]' ).remove();
                                         card.attr( 'tg_added_page', 'removed' );
                                     }
                                 }
 
                             } );
-                            console.log( "adding", cnt2, cnt3, cnt4 );
+                            //console.log( "adding", cnt2, cnt3, cnt4 );
 
                         }
 
@@ -475,11 +411,11 @@ var TrelloGo = can.Control.extend( {
                 }, 1000 );
             }
 
-            console.log( "count", count );
+            //console.log( "count", count );
 
-            if( self.options.data.attr( 'cards_received' ) && self.options.data.attr( 'boards' ).length > 0 && self.options.data.attr( 'lists' ).length > 0 ) {
-                self.options.data.attr( 'card_count_filtered', count );
-                self.options.data.attr( 'card_count', self.options.data.attr( 'cards' ).length );
+            if( sdat.attr( 'cards_received' ) && sdat.attr( 'boards' ).length > 0 && sdat.attr( 'lists' ).length > 0 ) {
+                sdat.attr( 'card_count_filtered', count );
+                sdat.attr( 'card_count', sdat.attr( 'cards' ).length );
             }
         }, 100 );
 
@@ -489,17 +425,19 @@ var TrelloGo = can.Control.extend( {
 
     loadSettings: function() {
         var self = this;
+        var sdat = self.options.data;
+
         chrome.storage.local.get( [ 'trellogo_set_show_nrs', 'trellogo_set_move_labels', 'trellogo_set_show_tags' ], function( result ) {
             if( typeof result.trellogo_set_show_nrs !== 'undefined' ) {
-                self.options.data.attr( 'settings_show_nrs', result.trellogo_set_show_nrs );
+                sdat.attr( 'settings_show_nrs', result.trellogo_set_show_nrs );
             }
 
             if( typeof result.trellogo_set_move_labels !== 'undefined' ) {
-                self.options.data.attr( 'settings_move_labels', result.trellogo_set_move_labels );
+                sdat.attr( 'settings_move_labels', result.trellogo_set_move_labels );
             }
 
             if( typeof result.trellogo_set_show_tags !== 'undefined' ) {
-                self.options.data.attr( 'settings_show_tags', result.trellogo_set_show_tags );
+                sdat.attr( 'settings_show_tags', result.trellogo_set_show_tags );
             }
 
             self.addIntervalFunctions();
@@ -510,21 +448,22 @@ var TrelloGo = can.Control.extend( {
 
     addIntervalFunctions: function() {
         var self = this;
+        var sdat = self.options.data;
 
         setInterval( function() {
             self.intervalAddMainToggle();
 
-            if( self.options.data.attr( 'settings_show_nrs' ) ) {
+            if( sdat.attr( 'settings_show_nrs' ) ) {
                 self.intervalAddCardNumbers();
             }
 
             self.intervalAddListTotals();
 
-            if( self.options.data.attr( 'settings_show_tags' ) ) {
+            if( sdat.attr( 'settings_show_tags' ) ) {
                 self.intervalAddTags();
             }
 
-            if( self.options.data.attr( 'settings_move_labels' ) ) {
+            if( sdat.attr( 'settings_move_labels' ) ) {
                 self.intervalMoveLabels();
             }
 
@@ -683,10 +622,11 @@ var TrelloGo = can.Control.extend( {
 
     intervalAddMainToggle: function() {
         var self = this;
+        var sdat = self.options.data;
 
         if( $( '#trellogo_main_toggle' ).length <= 0 ) {
             $.get( chrome.extension.getURL( 'template_toggle.mus' ), function( data ) {
-                var template = can.view( can.mustache( data ), self.options.data );
+                var template = can.view( can.mustache( data ), sdat );
 
                 $( '.header-search' ).after( template );
             } );
@@ -713,8 +653,6 @@ var TrelloGo = can.Control.extend( {
             }
 
             $( el ).find( '.trellogo_card_sid' ).click( function( ev ) {
-                //console.log( "aaa", ev, ev.target, $( ev.target ).text() );
-
                 chrome.runtime.sendMessage( {
                     type: 'trellogo_copy_to_clipboard',
                     text: $( ev.target ).text()
@@ -729,9 +667,10 @@ var TrelloGo = can.Control.extend( {
 
     addUINodes: function() {
         var self = this;
+        var sdat = self.options.data;
 
         $.get( chrome.extension.getURL( 'template.mus' ), function( data ) {
-            var template = can.view( can.mustache( data ), self.options.data );
+            var template = can.view( can.mustache( data ), sdat );
 
             $( '#header' ).after( template );
         } );
@@ -741,8 +680,10 @@ var TrelloGo = can.Control.extend( {
 
     getAppKey: function() {
         var self = this;
+        var sdat = self.options.data;
+
         chrome.storage.local.get( 'trellogo_appkey', function( result ) {
-            self.options.data.attr( 'appkey', result.trellogo_appkey );
+            sdat.attr( 'appkey', result.trellogo_appkey );
 
             if( typeof result.trellogo_appkey === 'undefined' || result.trellogo_appkey === '' ) {
             } else {
@@ -756,7 +697,7 @@ var TrelloGo = can.Control.extend( {
     addTrelloScript: function( appkey ) {
         var self = this;
 
-        // Add our scruipt that runs INSIDE the page
+        // Add our script that runs INSIDE the page
         var s = document.createElement( 'script' );
         s.src = chrome.extension.getURL( 'script.js' );
         ( document.head || document.documentElement ).appendChild( s );
@@ -768,8 +709,6 @@ var TrelloGo = can.Control.extend( {
     ////////////////////////////////////////
 
     sendEvt: function( data ) {
-        //console.log( "sendEvt", data );
-
         var evt = document.createEvent( 'CustomEvent' );
         evt.initCustomEvent( 'TrelloGoEvent1', true, true, data );
         document.dispatchEvent( evt );
@@ -779,13 +718,12 @@ var TrelloGo = can.Control.extend( {
 
     newCards: function( cards ) {
         var self = this;
+        var sdat = self.options.data;
 
-        self.options.data.attr( 'cards_received', true );
+        sdat.attr( 'cards_received', true );
 
-        //this.options.data.attr( 'cards', cards );
-
-        if( self.options.data.attr( 'cards' ) ) {
-            self.options.data.attr( 'cards' ).forEach( function( card ) {
+        if( sdat.attr( 'cards' ) ) {
+            sdat.attr( 'cards' ).forEach( function( card ) {
                 card.attr( 'tg_temp_xs', 'pre' );
             } );
         }
@@ -796,22 +734,20 @@ var TrelloGo = can.Control.extend( {
                 card.attr( newCard );
                 card.removeAttr( 'tg_temp_xs' );
             } else {
-                self.options.data.attr( 'cards' ).push( newCard );
+                sdat.attr( 'cards' ).push( newCard );
             }
         } );
 
         chrome.storage.local.get( null, function( items ) {
             var allKeys = Object.keys( items );
-            //console.log( 'allKeys', allKeys, items );
 
-            if( self.options.data.attr( 'cards' ) ) {
-                self.options.data.attr( 'cards' ).forEach( function( card ) {
+            if( sdat.attr( 'cards' ) ) {
+                sdat.attr( 'cards' ).forEach( function( card ) {
                     if( card.attr( 'tg_temp_xs' ) === 'pre' ) {
                         $( '.trellogo_card[data-trellogo-card-id="' + card.id + '"]' ).remove();
 
                         $.each( allKeys, function( ii, key ) {
                             if( key.indexOf( 'trellogo_card_' + card.id ) >= 0 ) {
-                                //console.log( "remove key", key );
                                 chrome.storage.local.remove( key );
                             }
                         } );
@@ -819,28 +755,12 @@ var TrelloGo = can.Control.extend( {
                 } );
             }
 
-            self.options.data.attr( 'cards' ).replace(
-                self.options.data.attr( 'cards' ).filter( function( card ) {
+            sdat.attr( 'cards' ).replace(
+                sdat.attr( 'cards' ).filter( function( card ) {
                     return card.attr( 'tg_temp_xs' ) !== 'pre';
                 } )
             );
         } );
-
-        //if( this.options.data.attr( 'cards' ) ) {
-        //    this.options.data.attr( 'cards' ).forEach( function( card ) {
-        //        //console.log( "card", card );
-        //        self.getBoardData( card.idBoard );
-        //        self.getListData( card.idList );
-        //    } );
-        //}
-
-        //self.options.data.attr( 'cards' ).forEach( function( card ) {
-        //    setTimeout( function() {
-        //        var template = can.view( can.mustache( self.templateCard ), card );
-        //
-        //        $( '.trellogo_column_inner:first' ).append( template );
-        //    } );
-        //} );
 
         this.updateCardsStatusThrottledObject();
     },
@@ -873,13 +793,12 @@ var TrelloGo = can.Control.extend( {
 
     boardFound: function( newBoard ) {
         var self = this;
+        var sdat = self.options.data;
         var board = self.getById( 'boards', newBoard.id );
 
         if( typeof board === 'undefined' ) {
-            //console.log( "fff" );
-            self.options.data.attr( 'boards' ).push( newBoard );
+            sdat.attr( 'boards' ).push( newBoard );
         } else {
-            //console.log( "ggg" );
             board.attr( newBoard );
         }
 
@@ -887,8 +806,6 @@ var TrelloGo = can.Control.extend( {
 
         chrome.storage.local.get( 'trellogo_board_' + board.id + '_unchecked', function( result ) {
             board.attr( 'tg_unchecked', result[ 'trellogo_board_' + board.id + '_unchecked' ] );
-
-            //console.log( "boardFound" );
 
             self.updateCardsStatusThrottledObject();
         } );
@@ -899,10 +816,11 @@ var TrelloGo = can.Control.extend( {
 
     listFound: function( newList ) {
         var self = this;
+        var sdat = self.options.data;
         var list = self.getById( 'lists', newList.id );
 
         if( typeof list === 'undefined' ) {
-            self.options.data.attr( 'lists' ).push( newList );
+            sdat.attr( 'lists' ).push( newList );
         } else {
             list.attr( newList );
         }
@@ -912,8 +830,6 @@ var TrelloGo = can.Control.extend( {
         chrome.storage.local.get( 'trellogo_list_' + list.id + '_unchecked', function( result ) {
             list.attr( 'tg_lunchecked', result[ 'trellogo_list_' + list.id + '_unchecked' ] );
 
-            //console.log( "listFound" );
-
             self.updateCardsStatusThrottledObject();
         } );
     },
@@ -922,10 +838,11 @@ var TrelloGo = can.Control.extend( {
 
     getById: function( typ, id ) {
         var self = this;
+        var sdat = self.options.data;
         var found = 0;
         var foundItem = undefined;
 
-        self.options.data.attr( typ ).forEach( function( item ) {
+        sdat.attr( typ ).forEach( function( item ) {
             if( item.id === id ) {
                 found++;
                 foundItem = item;
@@ -938,8 +855,11 @@ var TrelloGo = can.Control.extend( {
     ////////////////////////////////////////
 
     getBoardData: function( boardId ) {
+        var self = this;
+        var sdat = self.options.data;
+
         if( typeof this.getById( 'boards', boardId ) === 'undefined' ) {
-            this.options.data.attr( 'boards' ).push( { id: boardId, 'name': 'Loading...' } );
+            sdat.attr( 'boards' ).push( { id: boardId, 'name': 'Loading...' } );
             this.sendEvt( { 'act': 'getBoardData', 'id': boardId } );
         }
     },
@@ -947,8 +867,11 @@ var TrelloGo = can.Control.extend( {
     ////////////////////////////////////////
 
     getListData: function( listId ) {
+        var self = this;
+        var sdat = self.options.data;
+
         if( typeof this.getById( 'lists', listId ) === 'undefined' ) {
-            this.options.data.attr( 'lists' ).push( { id: listId, 'name': 'Loading...' } );
+            sdat.attr( 'lists' ).push( { id: listId, 'name': 'Loading...' } );
             this.sendEvt( { 'act': 'getListData', 'id': listId } );
         }
     },
@@ -975,7 +898,7 @@ var now = (typeof Date.now === 'function')? Date.now : function(){
 
 ////////////////////////////////////////
 
-function throttle(fn, delay){
+function throttle( fn, delay ){
     var context, timeout, result, args,
         cur, diff, prev = 0;
     function delayed(){
@@ -1007,7 +930,7 @@ $( function() {
 
     can.mustache.registerHelper( 'viaref', function( typ, key, val ) {
         return trelloGo.viaRef( typ, key, val() );
-    } )
+    } );
 
     can.mustache.registerHelper( 'eq', function( val, cmp, options ) {
         if( typeof( val ) === 'function' ) {
