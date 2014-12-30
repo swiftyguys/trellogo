@@ -98,7 +98,7 @@ var TrelloGo = can.Control.extend( {
         var self = this;
         var sdat = self.options.data;
 
-        chrome.storage.local.set( { 'trellogo_appkey': '' } );
+        self.storeageSet( 'trellogo_appkey', '' );
         sdat.attr( 'appkey', '' );
         this.sendEvt( { 'act': 'logout' } );
     },
@@ -111,7 +111,7 @@ var TrelloGo = can.Control.extend( {
         var val = $( '.trellogo_appkey_input' ).val();
 
         sdat.attr( 'appkey', val );
-        chrome.storage.local.set( { 'trellogo_appkey': val } );
+        self.storeageSet( 'trellogo_appkey', val );
         this.getAppKey();
     },
 
@@ -207,7 +207,7 @@ var TrelloGo = can.Control.extend( {
         var sdat = self.options.data;
 
         sdat.attr( 'settings_show_nrs', ! sdat.attr( 'settings_show_nrs' ) );
-        chrome.storage.local.set( { 'trellogo_set_show_nrs': sdat.attr( 'settings_show_nrs' ) } );
+        self.storeageSet( 'trellogo_set_show_nrs', sdat.attr( 'settings_show_nrs' ) );
     },
 
     ////////////////////////////////////////
@@ -217,7 +217,7 @@ var TrelloGo = can.Control.extend( {
         var sdat = self.options.data;
 
         sdat.attr( 'settings_move_labels', ! sdat.attr( 'settings_move_labels' ) );
-        chrome.storage.local.set( { 'trellogo_set_move_labels': sdat.attr( 'settings_move_labels' ) } );
+        self.storeageSet( 'trellogo_set_move_labels', sdat.attr( 'settings_move_labels' ) );
     },
 
     ////////////////////////////////////////
@@ -227,19 +227,18 @@ var TrelloGo = can.Control.extend( {
         var sdat = self.options.data;
 
         sdat.attr( 'settings_show_tags', ! sdat.attr( 'settings_show_tags' ) );
-        chrome.storage.local.set( { 'trellogo_set_show_tags': sdat.attr( 'settings_show_tags' ) } );
+        self.storeageSet( 'trellogo_set_show_tags', sdat.attr( 'settings_show_tags' ) );
     },
 
     ////////////////////////////////////////
 
     '.trellogo_set_board_check mouseup': function( el ) {
+        var self = this;
         var board = this.getById( 'boards', $( el ).parent().prev().attr( 'data-trellogo-boad-id' ) );
 
         if( typeof board !== 'undefined' ) {
-            var obj = {};
             board.attr( 'tg_unchecked', ! board.attr( 'tg_unchecked' ) );
-            obj[ 'trellogo_board_' + board.id + '_unchecked' ] = board.attr( 'tg_unchecked' );
-            chrome.storage.local.set( obj );
+            self.storeageSet( 'trellogo_board_' + board.id + '_unchecked', board.attr( 'tg_unchecked' ) );
         }
 
         this.updateCardsStatusThrottledObject();
@@ -248,13 +247,12 @@ var TrelloGo = can.Control.extend( {
     ////////////////////////////////////////
 
     '.trellogo_set_list_check mouseup': function( el ) {
+        var self = this;
         var list = this.getById( 'lists', $( el ).parent().attr( 'data-trellogo-list-id' ) );
 
         if( typeof list !== 'undefined' ) {
-            var obj = {};
             list.attr( 'tg_lunchecked', ! list.attr( 'tg_lunchecked' ) );
-            obj[ 'trellogo_list_' + list.id + '_unchecked' ] = list.attr( 'tg_lunchecked' );
-            chrome.storage.local.set( obj );
+            self.storeageSet( 'trellogo_list_' + list.id + '_unchecked', list.attr( 'tg_lunchecked' ) );
         }
 
         this.updateCardsStatusThrottledObject();
@@ -287,7 +285,7 @@ var TrelloGo = can.Control.extend( {
 
                     if( ! ( parseInt( card.attr( 'tg_column' ) , 10 ) >= 0 ) ) {
                         var key = 'trellogo_card_' + card.id + '_column';
-                        chrome.storage.local.get( key, function( result ) {
+                        self.storeageGet( key, function( result ) {
                             var key = Object.keys( result )[0];
                             if( result[ key ] ) {
                                 card.attr( 'tg_column', result[ key ] );
@@ -300,7 +298,7 @@ var TrelloGo = can.Control.extend( {
 
                     if( ! ( parseInt( card.attr( 'tg_order' ) , 10 ) >= 0 ) ) {
                         var key = 'trellogo_card_' + card.id + '_order';
-                        chrome.storage.local.get( key, function( result ) {
+                        self.storeageGet( key, function( result ) {
                             var key = Object.keys( result )[ 0 ];
                             var n = 0;
                             if( result[ key ] ) {
@@ -427,7 +425,7 @@ var TrelloGo = can.Control.extend( {
         var self = this;
         var sdat = self.options.data;
 
-        chrome.storage.local.get( [ 'trellogo_set_show_nrs', 'trellogo_set_move_labels', 'trellogo_set_show_tags' ], function( result ) {
+        self.storeageGet( [ 'trellogo_set_show_nrs', 'trellogo_set_move_labels', 'trellogo_set_show_tags' ], function( result ) {
             if( typeof result.trellogo_set_show_nrs !== 'undefined' ) {
                 sdat.attr( 'settings_show_nrs', result.trellogo_set_show_nrs );
             }
@@ -497,17 +495,13 @@ var TrelloGo = can.Control.extend( {
                                 var card = self.getById( 'cards', $( el ).attr( 'data-trellogo-card-id' ) );
 
                                 if( typeof card !== 'undefined' ) {
-                                    var obj = {};
                                     if( card.attr( 'tg_order' ) != j + 1 ) {
-                                        obj[ 'trellogo_card_' + card.id + '_order' ] = j + 1;
-                                        chrome.storage.local.set( obj );
+                                        self.storeageSet( 'trellogo_card_' + card.id + '_order', j + 1 );
                                     }
 
                                     var newColNr = $columnInner.attr( 'data-trellogo-column-nr' );
                                     if( card.attr( 'tg_column' ) !== newColNr ) {
-                                        obj = {};
-                                        obj[ 'trellogo_card_' + card.id + '_column' ] = newColNr;
-                                        chrome.storage.local.set( obj );
+                                        self.storeageSet( 'trellogo_card_' + card.id + '_column', newColNr );
                                     }
 
                                     card.attr( 'tg_column', newColNr );
@@ -682,7 +676,7 @@ var TrelloGo = can.Control.extend( {
         var self = this;
         var sdat = self.options.data;
 
-        chrome.storage.local.get( 'trellogo_appkey', function( result ) {
+        self.storeageGet( 'trellogo_appkey', function( result ) {
             sdat.attr( 'appkey', result.trellogo_appkey );
 
             if( typeof result.trellogo_appkey === 'undefined' || result.trellogo_appkey === '' ) {
@@ -738,7 +732,7 @@ var TrelloGo = can.Control.extend( {
             }
         } );
 
-        chrome.storage.local.get( null, function( items ) {
+        self.storeageGet( null, function( items ) {
             var allKeys = Object.keys( items );
 
             if( sdat.attr( 'cards' ) ) {
@@ -804,7 +798,7 @@ var TrelloGo = can.Control.extend( {
 
         board = self.getById( 'boards', newBoard.id );
 
-        chrome.storage.local.get( 'trellogo_board_' + board.id + '_unchecked', function( result ) {
+        self.storeageGet( 'trellogo_board_' + board.id + '_unchecked', function( result ) {
             board.attr( 'tg_unchecked', result[ 'trellogo_board_' + board.id + '_unchecked' ] );
 
             self.updateCardsStatusThrottledObject();
@@ -827,7 +821,7 @@ var TrelloGo = can.Control.extend( {
 
         list = self.getById( 'lists', newList.id );
 
-        chrome.storage.local.get( 'trellogo_list_' + list.id + '_unchecked', function( result ) {
+        self.storeageGet( 'trellogo_list_' + list.id + '_unchecked', function( result ) {
             list.attr( 'tg_lunchecked', result[ 'trellogo_list_' + list.id + '_unchecked' ] );
 
             self.updateCardsStatusThrottledObject();
@@ -886,6 +880,18 @@ var TrelloGo = can.Control.extend( {
         }
 
         return '';
+    },
+
+    ////////////////////////////////////////
+
+    storeageSet: function( key, val ) {
+        chrome.storage.local.set( { key: val } );
+    },
+
+    ////////////////////////////////////////
+
+    storeageGet: function( key, func ) {
+        chrome.storage.local.get( key, func );
     }
 
 } );
