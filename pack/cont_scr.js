@@ -932,7 +932,9 @@ var TrelloGo = can.Control.extend( {
     ////////////////////////////////////////
 
     storeageSet: function( key, val ) {
-        chrome.storage.local.set( { key: val } );
+        var obj = {};
+        obj[ key ] = val;
+        chrome.storage.local.set( obj );
     },
 
     ////////////////////////////////////////
