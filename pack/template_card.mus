@@ -1,6 +1,7 @@
-<div class="trellogo_card" data-trellogo-card-id="{{id}}">
+<div class="trellogo_card {{tg_due_soon}}" data-trellogo-card-id="{{id}}">
     {{name}}<br>
     <span style="font-size: 10px; line-height: 10px;">
+        {{#if tg_due}}Due in {{tg_due}}<br>{{/if}}
         {{viaref "boards" "id" idBoard}}
         // {{viaref "lists" "id" idList}}<br>
     </span>

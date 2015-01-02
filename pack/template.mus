@@ -58,6 +58,27 @@
         min-height: 20px !important;
         margin: 0;
     }
+
+    .trellogo_due_0 {
+        background-color: #ff8080;
+    }
+    .trellogo_due_0:hover {
+        background-color: #e06060;
+    }
+
+    .trellogo_due_1 {
+        background-color: #ffc070;
+    }
+    .trellogo_due_1:hover {
+        background-color: #e0a050;
+    }
+
+    .trellogo_due_3 {
+        background-color: #ffff70;
+    }
+    .trellogo_due_3:hover {
+        background-color: #e0e050;
+    }
 </style>
 
 <div id="trellogo_main" style="display: none; padding: 5px; margin-bottom: 15px;">

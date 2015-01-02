@@ -403,8 +403,17 @@ var TrelloGo = can.Control.extend( {
         if( typeof board !== 'undefined' && typeof list !== 'undefined' ) {
             if( self.boardsFound && self.listsFound ) {
                 var sh = true;
+
+                // Hide card if it's board or lists is unchecked in settings
                 if( board.attr( 'tg_unchecked' ) === true || list.attr( 'tg_lunchecked' ) === true ) {
                     sh = false;
+                }
+
+                if( card.due ) {
+                    self.checkCardDue( card );
+                    if( typeof card.attr( 'tg_due_soon' ) !== 'undefined' ) {
+                        sh = true;
+                    }
                 }
 
                 if( card.attr( 'tg_show' ) !== sh ) {
@@ -468,6 +477,9 @@ var TrelloGo = can.Control.extend( {
         $( '.trellogo_column_inner' ).each( function( ii, el ) {
             var $column = $( el );
             $column.find( '.trellogo_card' ).each( function( ii, el ) {
+
+                // Outer loop of cards
+
                 var $card = $( el );
                 var card = self.getById( 'cards', $card.attr( 'data-trellogo-card-id' ) );
                 var done = false;
@@ -477,12 +489,14 @@ var TrelloGo = can.Control.extend( {
                             var $column2 = $( el );
                             $column2.find( '.trellogo_card' ).each( function( ii, el ) {
                                 if( !done ) {
+
+                                    // Inner loop of cards
+
                                     var $card2 = $( el );
                                     var card2 = self.getById( 'cards', $card2.attr( 'data-trellogo-card-id' ) );
                                     if( $card.is( $card2 ) ) {
                                         done = true;
-                                    }
-                                    if( !done && card2.attr( 'tg_order' ) > card.attr( 'tg_order' ) ) {
+                                    } else if( self.compareTwoCards( card, card2 ) ) {
                                         $card.insertBefore( $card2 );
                                         done = true;
                                     }
@@ -496,6 +510,38 @@ var TrelloGo = can.Control.extend( {
                 }, 1 );
             } );
         } );
+    },
+
+    ////////////////////////////////////////
+
+    compareTwoCards: function( card, card2 ) {
+        var self = this;
+
+        var better = false;
+        var due1 = self.getCardDueValForCompare( card );
+        var due2 = self.getCardDueValForCompare( card2 );
+
+        if( due2 > due1 ) {
+            better = true;
+        } else if( due1 === due2 ) {
+            if( card2.attr( 'tg_order' ) > card.attr( 'tg_order' ) ) {
+                better = true;
+            }
+        }
+
+        return better;
+    },
+
+    ////////////////////////////////////////
+
+    getCardDueValForCompare: function( card ) {
+        var due1 = card.attr( 'tg_due_soon' );
+        if( ! due1 ) {
+            due1 = 9;
+        } else {
+            due1 = parseInt( due1.substr( 'trellogo_due_'.length, 1 ), 10 );
+        }
+        return due1;
     },
 
     ////////////////////////////////////////
@@ -795,12 +841,14 @@ var TrelloGo = can.Control.extend( {
 
         sdat.attr( 'cards_received', true );
 
+        // Mark all current cards
         if( sdat.attr( 'cards' ) ) {
             sdat.attr( 'cards' ).forEach( function( card ) {
                 card.attr( 'tg_temp_xs', 'pre' );
             } );
         }
 
+        // Add the new cards (or replace current)
         $.each( cards, function( ii, newCard ) {
             var card = self.getById( 'cards', newCard.id );
             if( typeof card !== 'undefined' ) {
@@ -809,8 +857,24 @@ var TrelloGo = can.Control.extend( {
             } else {
                 sdat.attr( 'cards' ).push( newCard );
             }
+
+            card = self.getById( 'cards', newCard.id );
+            self.checkCardDue( card );
         } );
 
+        self.removeCardsThatNoLongerExist();
+
+        self.updateCardsStatusThrottledObject();
+    },
+
+    ////////////////////////////////////////
+
+    removeCardsThatNoLongerExist: function() {
+        var self = this;
+        var sdat = self.options.data;
+
+        // Remove current cards that are no longer received from Trello
+        // and also remove the local storage values for those cards
         self.storeageGet( null, function( items ) {
             var allKeys = Object.keys( items );
 
@@ -834,8 +898,37 @@ var TrelloGo = can.Control.extend( {
                 } )
             );
         } );
+    },
 
-        this.updateCardsStatusThrottledObject();
+    ////////////////////////////////////////
+
+    checkCardDue: function( card ) {
+        var self = this;
+
+        if( card.due ) {
+            var tm = new Date( card.due );
+            var workHoursDiff = self.workingHoursBetweenDates( new Date(), tm );
+            //console.log( "aaa", workHoursDiff, tm );
+            if( workHoursDiff > 8 ) {
+                card.attr( 'tg_due', parseInt( workHoursDiff / 8 ) + ' workdays' );
+            } else if( workHoursDiff > 8 ) {
+                card.attr( 'tg_due', parseInt( workHoursDiff / 8 ) + ' workdays' );
+            } else {
+                card.attr( 'tg_due', workHoursDiff + ' workhours' );
+            }
+            if( workHoursDiff <= 0 ) {
+                card.attr( 'tg_due_soon', 'trellogo_due_0' );
+            } else if( workHoursDiff < 8 ) {
+                card.attr( 'tg_due_soon', 'trellogo_due_1' );
+            } else if( workHoursDiff < 24 ) {
+                card.attr( 'tg_due_soon', 'trellogo_due_3' );
+            } else {
+                card.removeAttr( 'tg_due_soon' );
+            }
+        } else {
+            card.removeAttr( 'tg_due' );
+            card.removeAttr( 'tg_due_soon' );
+        }
     },
 
     ////////////////////////////////////////
@@ -973,6 +1066,44 @@ var TrelloGo = can.Control.extend( {
 
     storeageGet: function( key, func ) {
         chrome.storage.local.get( key, func );
+    },
+
+    ////////////////////////////////////////
+
+    workingHoursBetweenDates: function( startDate, endDate ) {
+        var worked = 0;
+        var current = startDate;
+
+        var workHoursStart = 9;
+        var workHoursEnd = 17;
+
+        if( endDate < startDate ) {
+            return 0;
+        }
+
+        while( current < endDate ) {
+            var curHours = current.getHours();
+            var curDay = current.getDay();
+            var timeDiff = Math.abs( current.getTime() - endDate.getTime() );
+            var diffDays = timeDiff / (1000 * 3600 * 24);
+
+            if( diffDays > 7 ) {
+                var diffWeeks = parseInt( diffDays / 7, 10 );
+                //console.log( 'aaa ' + diffWeeks + ' === ' + diffWeeks * 5 * ( workHoursEnd - workHoursStart ) );
+                worked += diffWeeks * 5 * ( workHoursEnd - workHoursStart );
+                current.setTime( current.getTime() + 1000 * 60 * 60 * ( 24 * 7 * diffWeeks ) );
+            } else if( curHours >= workHoursEnd ) {
+                current.setTime( current.getTime() + 1000 * 60 * 60 * ( 24 - workHoursEnd + workHoursStart - 1 ) );
+            } else if( curHours >= workHoursStart && curHours < workHoursEnd && curDay !== 0 && curDay !== 6 ) {
+                worked++;
+                current.setTime( current.getTime() + 1000 * 60 * 60 );
+                //   console.log( 'bbb '+ current.toString() );
+            } else {
+                current.setTime( current.getTime() + 1000 * 60 * 60 );
+            }
+        }
+
+        return worked;
     }
 
 } );
