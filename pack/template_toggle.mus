@@ -40,7 +40,7 @@
 
 &nbsp;
 <a class="header-btn" href="#" title="TrelloGo" id="trellogo_main_toggle">
-    <span class="header-btn-icon icon-lg icon-menu light"></span>
+    <span class="header-btn-icon icon-lg icon-dropdown-menu light"></span>
 </a>
 
 <a class="header-btn" href="#" title="Copy an 8 digit card id to the clipboard and click here to open that card. Click on any (grey) id below to copy to clipboard" id="trellogo_id_search">

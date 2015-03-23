@@ -647,7 +647,7 @@ var TrelloGo = can.Control.extend( {
     intervalMoveLabels: function() {
         var self = this;
 
-        $( '.list-card > .list-card-labels:not(.trellogo_label_list)' ).each( function( ii, el ) {
+        $( '.list-card-details > .list-card-labels:not(.trellogo_label_list)' ).each( function( ii, el ) {
             var $cardLabels = $( el );
             var $card = $cardLabels.closest( '.list-card' );
             var $cardBadges = $card.find( '.badges' );

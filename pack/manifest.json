@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "TrelloGo",
     "description": "TrelloGo",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "background": {
         "page": "main.html"
     },
