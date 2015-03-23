@@ -759,26 +759,28 @@ var TrelloGo = can.Control.extend( {
 
         $( '.list-card-title:not(.trellogo_id_added)' ).each( function( ii, el ) {
             var href = $( el ).attr( 'href' );
-            var hrefParts = href.split( '/' );
-            var $cardID = $( el ).find( '.card-short-id' );
+            if ( href ) {
+                var hrefParts = href.split( '/' );
+                var $cardID = $( el ).find( '.card-short-id' );
 
-            if( $cardID.length > 0 ) {
-                if( $( el ).find( '.trellogo_card_sid' ).length <= 0 ) {
-                    $cardID.append( ' <span class="trellogo_card_sid">' + hrefParts[ 2 ] + '</span>' );
-                    $cardID.css( 'display', 'block' );
-                    $cardID.css( 'font-weight', 'bold' );
+                if( $cardID.length > 0 ) {
+                    if( $( el ).find( '.trellogo_card_sid' ).length <= 0 ) {
+                        $cardID.append( ' <span class="trellogo_card_sid">' + hrefParts[ 2 ] + '</span>' );
+                        $cardID.css( 'display', 'block' );
+                        $cardID.css( 'font-weight', 'bold' );
+                    }
+                    $( el ).addClass( 'trellogo_id_added' );
                 }
-                $( el ).addClass( 'trellogo_id_added' );
-            }
 
-            $( el ).find( '.trellogo_card_sid' ).click( function( ev ) {
-                chrome.runtime.sendMessage( {
-                    type: 'trellogo_copy_to_clipboard',
-                    text: $( ev.target ).text()
+                $( el ).find( '.trellogo_card_sid' ).click( function( ev ) {
+                    chrome.runtime.sendMessage( {
+                        type: 'trellogo_copy_to_clipboard',
+                        text: $( ev.target ).text()
+                    } );
+
+                    return false;
                 } );
-
-                return false;
-            } );
+            }
         } );
     },
 

@@ -51,7 +51,8 @@
         </div>
         <div id="trellogo_settings_filter">
 
-            Boards / lists used in filter (uncheck to remove from results):<br><br>
+            Boards / lists used in filter (uncheck to remove from results):<br>
+            (Cards with due dates are always shown, even if their board or list is unchecked)<br><br>
             {{#each boards}}
                 <div style="clear: both;">
                     <div class="trellogo_set_board_toggle" data-trellogo-boad-id="{{id}}" style="float: left; cursor: pointer;">
