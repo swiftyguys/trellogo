@@ -805,7 +805,7 @@ var TrelloGo = can.Control.extend( {
             var href = $( el ).attr( 'href' );
             if ( href ) {
                 var hrefParts = href.split( '/' );
-                var $cardID = $( el ).find( '.card-short-id' );
+                var $cardID = $( el ).parent();
 
                 if( $cardID.length > 0 ) {
                     if( $( el ).find( '.trellogo_card_sid' ).length <= 0 ) {
