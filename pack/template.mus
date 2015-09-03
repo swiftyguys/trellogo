@@ -44,6 +44,13 @@
         background-color: #F0F0F0;
     }
 
+    .trellogo_card_hide {
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        visibility: hidden;
+    }
+
     .trellogo_sortable_placeholder {
         background-color: transparent !important;
         border: 2px dashed white;
@@ -96,6 +103,14 @@
                 <div style="float: left; padding-bottom: 8px;">
                     My cards: [{{card_count_filtered}} of {{card_count}}]
                     - <a id="trellogo_refresh_toggle" href="#">Refresh</a>
+                    - <a class="trellogo_filter_current_board" href="#">
+                        {{#if filter_current_board}}
+                            showing only current board
+                        {{else}}
+                            showing all boards
+                        {{/if}}
+
+                    </a>
                 </div>
                 <div style="clear: both;"></div>
 

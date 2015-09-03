@@ -147,7 +147,7 @@ var trelloGo = {
     getCards: function() {
         var self = this;
 
-        Trello.get( 'members/me/cards?fields=name,url,idBoard,idList,due', function( cards ) {
+        Trello.get( 'members/me/cards?fields=name,url,idBoard,idList,due,labels', function( cards ) {
             self.sendEvt( { 'act': 'newCards', cards: cards } );
         } );
     },

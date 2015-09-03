@@ -1,8 +1,10 @@
-<div class="trellogo_card {{tg_due_soon}}" data-trellogo-card-id="{{id}}">
-    {{name}}<br>
-    <span style="font-size: 10px; line-height: 10px;">
-        {{#if tg_due}}Due in {{tg_due}}<br>{{/if}}
-        {{viaref "boards" "id" idBoard}}
-        // {{viaref "lists" "id" idList}}<br>
-    </span>
-<div>
+{{#card}}
+    <div class="trellogo_card {{tg_due_soon}} {{eqboard idBoard ../sdat.filter_current_board ../sdat.current_board}}" data-trellogo-card-id="{{id}}">
+        {{name}}<br>
+        <span style="font-size: 10px; line-height: 10px;">
+            {{#if tg_due}}Due in {{tg_due}}<br>{{/if}}
+            {{viaref "boards" "id" idBoard}}
+            // {{viaref "lists" "id" idList}}<br>
+        </span>
+    <div>
+{{/card}}

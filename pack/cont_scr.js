@@ -11,10 +11,24 @@ var TrelloGo = can.Control.extend( {
           my_full_name: '',
           card_count: '...',
           card_count_filtered: '...',
+          current_board: '',
+          filter_current_board: false,
           cards: [],
           boards: [],
           lists: [],
           columns: [
+              //{
+              //    name: 'Now',
+              //    when: true
+              //},
+              //{
+              //    name: 'Soon',
+              //    when: true
+              //},
+              //{
+              //    name: 'Later',
+              //    when: true
+              //},
               {
                   nr: 0,
                   name: 'Unplannend'
@@ -84,6 +98,26 @@ var TrelloGo = can.Control.extend( {
         } );
 
         self.on();
+
+        self.timeLoop();
+    },
+
+    ////////////////////////////////////////
+
+    timeLoop: function() {
+        var self = this;
+        var sdat = self.options.data;
+
+        var boardName = $.trim( $( '.board-header-btn-name .board-header-btn-text' ).text() );
+        //boardName = "54afa48bfb0e3e10841df051";
+        if( boardName !== sdat.attr( 'current_board' ) ) {
+            //console.log( 'bbb', boardName );
+            sdat.attr( 'current_board', boardName )
+        }
+
+        setTimeout( function() {
+            self.timeLoop();
+        }, 1000 );
     },
 
     ////////////////////////////////////////
@@ -118,7 +152,7 @@ var TrelloGo = can.Control.extend( {
     ////////////////////////////////////////
 
     '#trellogo_main_toggle click': function() {
-        var h = $( window ).height() - 350;
+        var h = $( window ).height() - 450;
         var $canvas = $( '.board-canvas' );
         var $main = $( '#trellogo_main' );
         if( $main.css( 'display' ) === 'none' ) {
@@ -136,7 +170,7 @@ var TrelloGo = can.Control.extend( {
     '#trellogo_id_search click': function() {
         var self = this;
         chrome.runtime.sendMessage( { type: 'trellogo_get_from_clipboard' }, function( response ) {
-            var val = response.text;
+            var val = $.trim( response.text );
 
             if( val.length === 8 ) {
                 val = '/c/' + val;
@@ -189,6 +223,16 @@ var TrelloGo = can.Control.extend( {
 
     '#trellogo_refresh_toggle click': function() {
         this.sendEvt( { 'act': 'getAll' } );
+    },
+
+    ////////////////////////////////////////
+
+    '.trellogo_filter_current_board click': function( el/*, ev*/ ) {
+        var self = this;
+        var sdat = self.options.data;
+
+        sdat.attr( 'filter_current_board', ! sdat.attr( 'filter_current_board' ) );
+        //self.storeageSet( 'trellogo_set_show_nrs', sdat.attr( 'settings_show_nrs' ) );
     },
 
     ////////////////////////////////////////
@@ -446,7 +490,7 @@ var TrelloGo = can.Control.extend( {
                         cnt3++;
                         card.attr( 'tg_added_page', 'added' )
                         setTimeout( function() {
-                            var template = can.view( can.mustache( self.templateCard ), card );
+                            var template = can.view( can.mustache( self.templateCard ), { card: card, sdat: sdat } );
 
                             $( '.trellogo_column_inner:first' ).append( template );
                         }, 1 );
@@ -794,6 +838,8 @@ var TrelloGo = can.Control.extend( {
             var template = can.view( can.mustache( data ), sdat );
 
             $( '#header' ).after( template );
+
+            self.on();
         } );
     },
 
@@ -866,10 +912,35 @@ var TrelloGo = can.Control.extend( {
 
         self.removeCardsThatNoLongerExist();
 
+        //self.checkCardsWhenLabels();
+
         self.updateCardsStatusThrottledObject();
     },
 
     ////////////////////////////////////////
+
+    //checkCardsWhenLabels: function() {
+    //    var self = this;
+    //    var sdat = self.options.data;
+    //
+    //    sdat.attr( 'cards' ).forEach( function( card ) {
+    //        card.attr( 'labels' ).forEach( function( label ) {
+    //            //if( card.attr( 'name' ).indexOf( 'photo' ) > 0 ) {
+    //            if( label.attr( 'color' ) === 'sky' ) {
+    //                console.log( 'aaa', card, label.attr( 'color' ) );
+    //                var found = 0;
+    //                sdat.attr( 'columns' ).forEach( function( column ) {
+    //                    if( column.name === label.attr( 'name' ) ) {
+    //                        found = 1;
+    //                    }
+    //                } );
+    //                if( found === 0 ) {
+    //                    //sdat.attr( 'columns' ).push( { name: label.attr( 'name' ) } );
+    //                }
+    //            }
+    //        } );
+    //    } );
+    //},
 
     removeCardsThatNoLongerExist: function() {
         var self = this;
@@ -1005,13 +1076,19 @@ var TrelloGo = can.Control.extend( {
     ////////////////////////////////////////
 
     getById: function( typ, id ) {
+        return this.getBy( typ, 'id', id );
+    },
+
+    ////////////////////////////////////////
+
+    getBy: function( typ, key, val ) {
         var self = this;
         var sdat = self.options.data;
         var found = 0;
         var foundItem = undefined;
 
         sdat.attr( typ ).forEach( function( item ) {
-            if( item.id === id ) {
+            if( item[ key ] === val ) {
                 found++;
                 foundItem = item;
             }
@@ -1051,6 +1128,30 @@ var TrelloGo = can.Control.extend( {
 
         if( typeof board !== 'undefined' ) {
             return board.attr( 'name' );
+        }
+
+        return '';
+    },
+
+    ////////////////////////////////////////
+
+    eqBoard: function( val ) {
+        var self = this;
+        var sdat = self.options.data;
+
+        //console.log( 'eqBoard' );
+        if( sdat.attr( 'filter_current_board' ) ) {
+            //console.log( 'eqBoard 2' );
+            if( '' !== sdat.attr( 'current_board' ) ) {
+                var board = this.getBy( 'boards', 'name', sdat.attr( 'current_board' ) );
+
+                if( typeof board !== 'undefined' ) {
+                    if( val !== board.attr( 'id' ) ) {
+                        //console.log( 'aaa', val, board.attr( 'id' ) );
+                        return 'trellogo_card_hide';
+                    }
+                }
+            }
         }
 
         return '';
@@ -1150,6 +1251,10 @@ $( function() {
 
     can.mustache.registerHelper( 'viaref', function( typ, key, val ) {
         return trelloGo.viaRef( typ, key, val() );
+    } );
+
+    can.mustache.registerHelper( 'eqboard', function( val ) {
+        return trelloGo.eqBoard( val() );
     } );
 
     can.mustache.registerHelper( 'eq', function( val, cmp, options ) {
