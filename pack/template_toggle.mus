@@ -23,6 +23,15 @@
         padding: 0px 4px;
     }
 
+    .trellogo_points_tag {
+        font-size: 11px;
+        line-height: 18px;
+        background-color: #177FB6;
+        color: white;
+        padding: 0px 4px;
+        font-weight: bold;
+    }
+
     .trellogo_label_list .card-label {
         width: inherit !important;
         height: 18px !important;

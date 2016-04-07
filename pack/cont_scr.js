@@ -747,6 +747,40 @@ var TrelloGo = can.Control.extend( {
                     $cardTitle.html( title );
                     $cardTitle.removeClass( 'trellogo_id_added' );
                 }
+
+                // if( title.substr( 0, 1 ) === '(' ) {
+                    var titleParts = title.split( '>(' );
+                    if( titleParts.length > 1 ) {
+                        var $card = $cardTitle.closest( '.list-card' );
+                        var $cardBadges = $card.find( '.badges' );
+                        var labels = [];
+
+                        $cardBadges.find( '.trellogo_points_tag' ).remove();
+
+                        $.each( titleParts, function( i, titlePart ) {
+                            if( i === 1 ) {
+                                var titleParts2 = titlePart.split( ')' );
+                                $cardBadges.append( '<div class="badge trellogo_points_tag aaa">' + titleParts2[ 0 ] + '</div>' );
+
+                                // var re = new RegExp( '\(' + titleParts2[ 0 ] + '\)', 'g' );
+                                // title = title.replace( re, '' );
+                                title = title.replace( '(' + titleParts2[ 0 ] + ')', '' );
+
+                                labels.push( titleParts2[ 0 ] );
+                            }
+                        } );
+
+                        $.each( $cardBadges.find( '.trellogo_points_tag' ), function( ii, label ) {
+                            if( $.inArray( $( label ).text(), labels ) < 0 ) {
+                                $( label ).remove();
+                            }
+                        } );
+
+                        $cardTitle.html( title );
+                        $cardTitle.removeClass( 'trellogo_id_added' );
+                    }
+                // }
+
                 $cardTitle.attr( 'data-trellogo-title', title );
             }
         } );
@@ -760,10 +794,17 @@ var TrelloGo = can.Control.extend( {
         $( '.list' ).each( function( ii, el ) {
             var $list = $( el );
             var aListTotal = parseInt( $list.find( '.list-header-num-cards' ).text(), 10 );
-            var aListFiltered = $list.find( '.list-card:not(.hide)' ).length;
+            var aListFiltered = $list.find( '.list-card:not(.hide):not(.js-composer)' ).length;
             if( ! ( aListTotal >= 0 ) ) {
                 aListTotal = 0;
             }
+            var hoursEstimate = 0;
+            $list.find( '.list-card:not(.hide):not(.js-composer)' ).find( '.trellogo_points_tag' ).each( function( ii, el ) {
+                var h = parseFloat( $( el ).text() );
+                if( h > 0 ) {
+                    hoursEstimate += h;
+                }
+            } );
 
             if( $list.find( '.trellogo_list_count' ).length <= 0 ) {
                 $list.find( '.list-header-num-cards' ).after( '<p class="trellogo_list_count"></p>' );
@@ -775,6 +816,9 @@ var TrelloGo = can.Control.extend( {
             } else {
                 s = aListFiltered + ' / ' + aListTotal;
             }
+
+            s += ' = ' + hoursEstimate +'h';
+
             if( $list.find( '.trellogo_list_count' ).html() !== s ) {
                 $list.find( '.trellogo_list_count' ).html( s );
             }
@@ -816,7 +860,7 @@ var TrelloGo = can.Control.extend( {
                     $( el ).addClass( 'trellogo_id_added' );
                 }
 
-                $( el ).find( '.trellogo_card_sid' ).click( function( ev ) {
+                $( el ).parent().find( '.trellogo_card_sid' ).click( function( ev ) {
                     chrome.runtime.sendMessage( {
                         type: 'trellogo_copy_to_clipboard',
                         text: $( ev.target ).text()
